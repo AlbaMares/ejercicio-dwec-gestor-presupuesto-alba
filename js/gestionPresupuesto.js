@@ -42,7 +42,17 @@ function CrearGasto(descripcion, valor, fecha, ...etiquetas) {
     }
 
     // 2. Métodos a funciones constructoras
+<<<<<<< Updated upstream
+this.mostrarGasto = function() {
+    return `Gasto correspondiente a ${this.descripcion} con valor ${this.valor} €`;
+};
+=======
 
+this.mostrarGasto = function() {
+    return `Gasto correspondiente a ${this.descripcion} con valor ${this.valor} €`;
+};
+
+>>>>>>> Stashed changes
 this.mostrarGastoCompleto = function() {
     let textoEtiquetas = "";
 
@@ -120,6 +130,31 @@ ${textoEtiquetas}
                     }
                 }             
         }
+
+        this.obtenerPeriodoAgrupacion = function(periodo)
+        {
+            let fecha = new Date(this.fecha);
+    
+            let anyo = fecha.getFullYear(); // 
+            let mes = fecha.getMonth() + 1; // Contar meses desde 0, empezamos por 1
+            let dia = fecha.getDate();
+
+            let dosNumerosMes = mes.toString().padStart(2, "0");    // Dos cifras desde cero para el mes
+            let dosNumerosDia = dia.toString().padStart(2, "0");    // Dos cifras desde cero para el día
+
+            if(periodo === "anyo")
+            {
+                return anyo.toString();
+            }
+            if(periodo === "mes")
+            {
+                return `${anyo}-${dosNumerosMes}`;
+            }
+            if(periodo === "dia")
+            {
+                return `${anyo}-${dosNumerosMes}-${dosNumerosDia}`
+            }
+        }
     }
 
 function listarGastos()
@@ -165,7 +200,109 @@ function calcularBalance()
     return totalBalance;
 }
 
+function filtrarGastos(filtros)
+{
+    return gastos.filter(function(gasto)
+    {
+        let seCumple = true;
 
+        if(filtros.fechaDesde) // El gasto no puede ser anterior
+        {
+            if(gasto.fecha < Date.parse(filtros.fechaDesde))
+            {
+                seCumple = false;
+            }
+        }
+
+        if(filtros.fechaHasta) // El gasto no puede ser posterior
+        {
+            if(gasto.fecha > Date.parse(filtros.fechaHasta))
+            {
+                seCumple = false;
+            }
+        }
+        
+        if(filtros.valorMinimo !== undefined) // En el valor mínimo: el gasto no puede ser inferior
+        {
+            if(gasto.valor < filtros.valorMinimo)
+            {
+                seCumple = false;
+            }
+        }
+
+        if(filtros.valorMaximo !== undefined)
+        {
+            if(gasto.valor > filtros.valorMaximo)
+            {
+                seCumple = false;
+            }
+        }
+
+        if(filtros.descripcionContiene)
+        {
+            if(!gasto.descripcion.toLowerCase().includes(filtros.descripcionContiene.toLowerCase()))
+            {
+                seCumple = false;   // Si no se encuentra el texto dentro de la descripción, false.
+            }
+        }
+
+        if(filtros.etiquetasTiene && filtros.etiquetasTiene.length > 0)
+        {
+            let esCorrecto = filtros.etiquetasTiene.some(function(etiquetaBuscada) // Si al menos una etiqueta del array etiquetas es correcta, devuelvo array etiquetas.
+             {
+                return gasto.etiquetas.some(function(etiquetaGasto)
+                {
+                    return etiquetaGasto.toLowerCase() === etiquetaBuscada.toLowerCase();
+                });
+            });
+            
+            if(!esCorrecto)
+            {
+                seCumple = false;
+            }
+        }
+
+        return seCumple;
+    });
+}
+
+function agruparGastos(periodo = "mes", etiquetas = [], fechaDesde, fechaHasta)
+{
+    
+    if(!fechaHasta)
+    {
+        let hoy = new Date();
+        let fechaActual = hoy.toLocaleDateString();   
+        fechaHasta = fechaActual;
+    }
+
+    let gastosFiltrados = filtrarGastos({
+    fechaDesde: fechaDesde,
+    fechaHasta: fechaHasta,
+    etiquetasTiene: etiquetas
+    });
+
+    let resultado = gastosFiltrados.reduce((acc, gasto) => {
+    let clavePeriodo = gasto.obtenerPeriodoAgrupacion(periodo);
+    
+    let existe = true;
+
+    if(acc[clavePeriodo] === undefined)
+    {
+        existe = false;
+    }
+
+    if(existe === false)
+    {
+        acc[clavePeriodo] = 0;
+    }
+
+    acc[clavePeriodo] += gasto.valor;
+
+    return acc;
+}, {});
+return resultado;
+}
 
 
 // NO MODIFICAR A PARTIR DE AQUÍ: exportación de funciones y objetos creados para poder ejecutar los tests.
@@ -179,5 +316,7 @@ export   {
     anyadirGasto,
     borrarGasto,
     calcularTotalGastos,
-    calcularBalance
+    calcularBalance,
+    filtrarGastos,
+    agruparGastos
 }
