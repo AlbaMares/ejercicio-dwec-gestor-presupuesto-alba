@@ -42,17 +42,10 @@ function CrearGasto(descripcion, valor, fecha, ...etiquetas) {
     }
 
     // 2. Métodos a funciones constructoras
-<<<<<<< Updated upstream
-this.mostrarGasto = function() {
-    return `Gasto correspondiente a ${this.descripcion} con valor ${this.valor} €`;
-};
-=======
-
 this.mostrarGasto = function() {
     return `Gasto correspondiente a ${this.descripcion} con valor ${this.valor} €`;
 };
 
->>>>>>> Stashed changes
 this.mostrarGastoCompleto = function() {
     let textoEtiquetas = "";
 
